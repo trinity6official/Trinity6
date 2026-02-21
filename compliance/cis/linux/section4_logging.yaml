@@ -1,0 +1,302 @@
+framework: CIS
+version: "2.0"
+section: "4"
+title: "Logging and Auditing"
+os: linux
+
+controls:
+  - id: CIS-4.1.1.1
+    title: "Ensure auditd is installed"
+    description: "auditd is the userspace component to 
+    the Linux Auditing System. It is responsible for 
+    writing audit records to disk."
+    severity: High
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: AU-2
+      - ISO27001: A.12.4.1
+      - SOC2: CC7.2
+    check:
+      type: command
+      command: "dpkg -l auditd 2>/dev/null | grep -c auditd"
+      operator: ">="
+      expected: 1
+      parse: last_value
+    remediation:
+      description: "Install auditd"
+      commands:
+        - "apt install auditd audispd-plugins -y"
+      verify: "dpkg -l auditd"
+
+  - id: CIS-4.1.1.2
+    title: "Ensure auditd service is enabled and running"
+    description: "The auditd daemon should be running 
+    and enabled to ensure audit records are captured."
+    severity: High
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: AU-2
+      - ISO27001: A.12.4.1
+      - SOC2: CC7.2
+    check:
+      type: command
+      command: "systemctl is-active auditd"
+      operator: contains
+      expected: "active"
+    remediation:
+      description: "Enable and start auditd"
+      commands:
+        - "systemctl enable auditd"
+        - "systemctl start auditd"
+      verify: "systemctl is-active auditd"
+
+  - id: CIS-4.1.1.3
+    title: "Ensure auditing for processes that start prior to auditd is enabled"
+    description: "Configure grub to audit processes that 
+    start prior to auditd being started."
+    severity: Medium
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: AU-2
+      - ISO27001: A.12.4.1
+    check:
+      type: command
+      command: "grep 'audit=1' /boot/grub/grub.cfg"
+      operator: contains
+      expected: "audit=1"
+    remediation:
+      description: "Enable audit in grub"
+      commands:
+        - "sed -i 's/GRUB_CMDLINE_LINUX=\"/GRUB_CMDLINE_LINUX=\"audit=1 /' /etc/default/grub"
+        - "update-grub"
+      verify: "grep audit=1 /boot/grub/grub.cfg"
+
+  - id: CIS-4.1.2.1
+    title: "Ensure audit log storage size is configured"
+    description: "Configure the maximum size of the audit 
+    log file. Once the log reaches the max size it will 
+    be rotated and a new log file will be created."
+    severity: Medium
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: AU-11
+      - ISO27001: A.12.4.1
+      - SOC2: CC7.2
+    check:
+      type: command
+      command: "grep max_log_file /etc/audit/auditd.conf"
+      operator: contains
+      expected: "max_log_file ="
+    remediation:
+      description: "Set audit log storage size"
+      commands:
+        - "sed -i 's/^max_log_file =.*/max_log_file = 100/' /etc/audit/auditd.conf"
+        - "systemctl restart auditd"
+      verify: "grep max_log_file /etc/audit/auditd.conf"
+
+  - id: CIS-4.1.2.2
+    title: "Ensure audit logs are not automatically deleted"
+    description: "The max_log_file_action setting determines 
+    how to handle the audit log file reaching the max file size."
+    severity: High
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: AU-11
+      - ISO27001: A.12.4.1
+      - SOC2: CC7.2
+    check:
+      type: command
+      command: "grep max_log_file_action /etc/audit/auditd.conf"
+      operator: contains
+      expected: "keep_logs"
+    remediation:
+      description: "Configure audit logs to not be deleted"
+      commands:
+        - "sed -i 's/^max_log_file_action.*/max_log_file_action = keep_logs/' /etc/audit/auditd.conf"
+        - "systemctl restart auditd"
+      verify: "grep max_log_file_action /etc/audit/auditd.conf"
+
+  - id: CIS-4.1.3
+    title: "Ensure events that modify date and time information are collected"
+    description: "Capture events where the system date 
+    and/or time has been modified. The parameters in 
+    this section are set to determine if the adjtimex, 
+    settimeofday, stime or clock_settime system calls 
+    have been executed."
+    severity: Medium
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: AU-12
+      - ISO27001: A.12.4.1
+      - SOC2: CC7.2
+    check:
+      type: command
+      command: "grep time-change /etc/audit/rules.d/*.rules 2>/dev/null"
+      operator: contains
+      expected: "time-change"
+    remediation:
+      description: "Add audit rules for time changes"
+      commands:
+        - "echo '-a always,exit -F arch=b64 -S adjtimex -S settimeofday -k time-change' >> /etc/audit/rules.d/audit.rules"
+        - "echo '-a always,exit -F arch=b32 -S adjtimex -S settimeofday -S stime -k time-change' >> /etc/audit/rules.d/audit.rules"
+        - "augenrules --load"
+      verify: "grep time-change /etc/audit/rules.d/*.rules"
+
+  - id: CIS-4.1.4
+    title: "Ensure events that modify user and group information are collected"
+    description: "Record events affecting the group, 
+    passwd, shadow and gshadow files. The parameters 
+    in this section will watch the files to see if 
+    they have been opened for write or have had 
+    attribute changes."
+    severity: High
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: AU-12
+      - ISO27001: A.12.4.1
+      - SOC2: CC7.2
+    check:
+      type: command
+      command: "grep identity /etc/audit/rules.d/*.rules 2>/dev/null"
+      operator: contains
+      expected: "identity"
+    remediation:
+      description: "Add audit rules for user/group changes"
+      commands:
+        - "echo '-w /etc/group -p wa -k identity' >> /etc/audit/rules.d/audit.rules"
+        - "echo '-w /etc/passwd -p wa -k identity' >> /etc/audit/rules.d/audit.rules"
+        - "echo '-w /etc/shadow -p wa -k identity' >> /etc/audit/rules.d/audit.rules"
+        - "augenrules --load"
+      verify: "grep identity /etc/audit/rules.d/*.rules"
+
+  - id: CIS-4.1.5
+    title: "Ensure login and logout events are collected"
+    description: "Monitor login and logout events. The 
+    parameters below track changes to files associated 
+    with login and logout events."
+    severity: Medium
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: AU-12
+      - ISO27001: A.12.4.1
+      - SOC2: CC7.2
+    check:
+      type: command
+      command: "grep logins /etc/audit/rules.d/*.rules 2>/dev/null"
+      operator: contains
+      expected: "logins"
+    remediation:
+      description: "Add audit rules for login events"
+      commands:
+        - "echo '-w /var/log/lastlog -p wa -k logins' >> /etc/audit/rules.d/audit.rules"
+        - "echo '-w /var/run/faillock/ -p wa -k logins' >> /etc/audit/rules.d/audit.rules"
+        - "augenrules --load"
+      verify: "grep logins /etc/audit/rules.d/*.rules"
+
+  - id: CIS-4.1.6
+    title: "Ensure session initiation information is collected"
+    description: "Monitor session initiation events. The 
+    parameters in this section track changes to the 
+    files associated with session events."
+    severity: Medium
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: AU-12
+      - ISO27001: A.12.4.1
+      - SOC2: CC7.2
+    check:
+      type: command
+      command: "grep session /etc/audit/rules.d/*.rules 2>/dev/null"
+      operator: contains
+      expected: "session"
+    remediation:
+      description: "Add audit rules for session events"
+      commands:
+        - "echo '-w /var/run/utmp -p wa -k session' >> /etc/audit/rules.d/audit.rules"
+        - "echo '-w /var/log/wtmp -p wa -k logins' >> /etc/audit/rules.d/audit.rules"
+        - "echo '-w /var/log/btmp -p wa -k logins' >> /etc/audit/rules.d/audit.rules"
+        - "augenrules --load"
+      verify: "grep session /etc/audit/rules.d/*.rules"
+
+  - id: CIS-4.2.1.1
+    title: "Ensure rsyslog is installed"
+    description: "The rsyslog software is a recommended 
+    replacement to the original syslogd daemon which 
+    provides improvements over syslogd."
+    severity: High
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: AU-2
+      - ISO27001: A.12.4.1
+      - SOC2: CC7.2
+    check:
+      type: command
+      command: "dpkg -l rsyslog 2>/dev/null | grep -c rsyslog"
+      operator: ">="
+      expected: 1
+      parse: last_value
+    remediation:
+      description: "Install rsyslog"
+      commands:
+        - "apt install rsyslog -y"
+        - "systemctl enable rsyslog"
+        - "systemctl start rsyslog"
+      verify: "dpkg -l rsyslog"
+
+  - id: CIS-4.2.1.2
+    title: "Ensure rsyslog service is enabled and running"
+    description: "Once the rsyslog package is installed 
+    it needs to be activated."
+    severity: High
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: AU-2
+      - ISO27001: A.12.4.1
+      - SOC2: CC7.2
+    check:
+      type: command
+      command: "systemctl is-active rsyslog"
+      operator: contains
+      expected: "active"
+    remediation:
+      description: "Enable and start rsyslog"
+      commands:
+        - "systemctl enable rsyslog"
+        - "systemctl start rsyslog"
+      verify: "systemctl is-active rsyslog"
+
+  - id: CIS-4.2.3
+    title: "Ensure permissions on log files are configured"
+    description: "Log files stored in /var/log contain 
+    logged information from many services on the system 
+    or on log hosts. Permissions on these files should 
+    be set to prevent unauthorized access."
+    severity: Medium
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: AU-9
+      - ISO27001: A.12.4.2
+      - SOC2: CC7.2
+    check:
+      type: command
+      command: "find /var/log -type f -perm /037 2>/dev/null | wc -l"
+      operator: "=="
+      expected: 0
+      parse: last_value
+    remediation:
+      description: "Fix permissions on log files"
+      commands:
+        - "find /var/log -type f -exec chmod g-wx,o-rwx {} +"
+      verify: "find /var/log -type f -perm /037 | wc -l"
