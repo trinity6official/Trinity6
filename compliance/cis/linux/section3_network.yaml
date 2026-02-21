@@ -1,0 +1,316 @@
+framework: CIS
+version: "2.0"
+section: "3"
+title: "Network Configuration"
+os: linux
+
+controls:
+  - id: CIS-3.1.1
+    title: "Ensure IP forwarding is disabled"
+    description: "Setting the flag to 0 ensures that a 
+    server with multiple interfaces cannot forward packets 
+    between networks."
+    severity: Medium
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: SC-5
+      - ISO27001: A.13.1.1
+      - SOC2: CC6.1
+    check:
+      type: command
+      command: "sysctl net.ipv4.ip_forward"
+      operator: contains
+      expected: "= 0"
+    remediation:
+      description: "Disable IP forwarding"
+      commands:
+        - "echo 'net.ipv4.ip_forward = 0' >> /etc/sysctl.conf"
+        - "sysctl -w net.ipv4.ip_forward=0"
+      verify: "sysctl net.ipv4.ip_forward"
+
+  - id: CIS-3.1.2
+    title: "Ensure packet redirect sending is disabled"
+    description: "ICMP Redirects are used to send routing 
+    information to other hosts. An attacker could use a 
+    malicious ICMP redirect to alter routing tables."
+    severity: Medium
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: SC-5
+      - ISO27001: A.13.1.1
+    check:
+      type: command
+      command: "sysctl net.ipv4.conf.all.send_redirects"
+      operator: contains
+      expected: "= 0"
+    remediation:
+      description: "Disable packet redirect sending"
+      commands:
+        - "echo 'net.ipv4.conf.all.send_redirects = 0' >> /etc/sysctl.conf"
+        - "echo 'net.ipv4.conf.default.send_redirects = 0' >> /etc/sysctl.conf"
+        - "sysctl -w net.ipv4.conf.all.send_redirects=0"
+        - "sysctl -w net.ipv4.conf.default.send_redirects=0"
+      verify: "sysctl net.ipv4.conf.all.send_redirects"
+
+  - id: CIS-3.2.1
+    title: "Ensure source routed packets are not accepted"
+    description: "In networking, source routing allows a 
+    sender to partially or fully specify the route packets 
+    take through a network. Source routing should be disabled."
+    severity: High
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: SC-5
+      - ISO27001: A.13.1.1
+      - SOC2: CC6.1
+    check:
+      type: command
+      command: "sysctl net.ipv4.conf.all.accept_source_route"
+      operator: contains
+      expected: "= 0"
+    remediation:
+      description: "Disable source routed packets"
+      commands:
+        - "echo 'net.ipv4.conf.all.accept_source_route = 0' >> /etc/sysctl.conf"
+        - "sysctl -w net.ipv4.conf.all.accept_source_route=0"
+      verify: "sysctl net.ipv4.conf.all.accept_source_route"
+
+  - id: CIS-3.2.2
+    title: "Ensure ICMP redirects are not accepted"
+    description: "ICMP redirect messages are packets that 
+    convey routing information. Accepting ICMP redirects 
+    has few legitimate uses and can be exploited by attackers."
+    severity: High
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: SC-5
+      - ISO27001: A.13.1.1
+    check:
+      type: command
+      command: "sysctl net.ipv4.conf.all.accept_redirects"
+      operator: contains
+      expected: "= 0"
+    remediation:
+      description: "Disable ICMP redirects"
+      commands:
+        - "echo 'net.ipv4.conf.all.accept_redirects = 0' >> /etc/sysctl.conf"
+        - "sysctl -w net.ipv4.conf.all.accept_redirects=0"
+      verify: "sysctl net.ipv4.conf.all.accept_redirects"
+
+  - id: CIS-3.2.3
+    title: "Ensure secure ICMP redirects are not accepted"
+    description: "Secure ICMP redirects are the same as 
+    ICMP redirects except they come from gateways listed 
+    on the default gateway list. Accepting them still 
+    has security risks."
+    severity: High
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: SC-5
+      - ISO27001: A.13.1.1
+    check:
+      type: command
+      command: "sysctl net.ipv4.conf.all.secure_redirects"
+      operator: contains
+      expected: "= 0"
+    remediation:
+      description: "Disable secure ICMP redirects"
+      commands:
+        - "echo 'net.ipv4.conf.all.secure_redirects = 0' >> /etc/sysctl.conf"
+        - "sysctl -w net.ipv4.conf.all.secure_redirects=0"
+      verify: "sysctl net.ipv4.conf.all.secure_redirects"
+
+  - id: CIS-3.2.4
+    title: "Ensure suspicious packets are logged"
+    description: "Enabling this feature and setting the 
+    flag to yes causes the kernel to log packets with 
+    impossible addresses to the kernel log."
+    severity: Medium
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: AU-12
+      - ISO27001: A.12.4.1
+      - SOC2: CC7.2
+    check:
+      type: command
+      command: "sysctl net.ipv4.conf.all.log_martians"
+      operator: contains
+      expected: "= 1"
+    remediation:
+      description: "Enable suspicious packet logging"
+      commands:
+        - "echo 'net.ipv4.conf.all.log_martians = 1' >> /etc/sysctl.conf"
+        - "sysctl -w net.ipv4.conf.all.log_martians=1"
+      verify: "sysctl net.ipv4.conf.all.log_martians"
+
+  - id: CIS-3.2.5
+    title: "Ensure broadcast ICMP requests are ignored"
+    description: "Setting net.ipv4.icmp_echo_ignore_broadcasts 
+    to 1 will cause the system to ignore all ICMP echo and 
+    timestamp requests to broadcast and multicast addresses."
+    severity: Medium
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: SC-5
+      - ISO27001: A.13.1.1
+    check:
+      type: command
+      command: "sysctl net.ipv4.icmp_echo_ignore_broadcasts"
+      operator: contains
+      expected: "= 1"
+    remediation:
+      description: "Ignore broadcast ICMP requests"
+      commands:
+        - "echo 'net.ipv4.icmp_echo_ignore_broadcasts = 1' >> /etc/sysctl.conf"
+        - "sysctl -w net.ipv4.icmp_echo_ignore_broadcasts=1"
+      verify: "sysctl net.ipv4.icmp_echo_ignore_broadcasts"
+
+  - id: CIS-3.2.6
+    title: "Ensure bogus ICMP responses are ignored"
+    description: "Setting icmp_ignore_bogus_error_responses 
+    to 1 prevents the kernel from logging bogus ICMP error 
+    responses from the network."
+    severity: Low
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: SC-5
+    check:
+      type: command
+      command: "sysctl net.ipv4.icmp_ignore_bogus_error_responses"
+      operator: contains
+      expected: "= 1"
+    remediation:
+      description: "Ignore bogus ICMP responses"
+      commands:
+        - "echo 'net.ipv4.icmp_ignore_bogus_error_responses = 1' >> /etc/sysctl.conf"
+        - "sysctl -w net.ipv4.icmp_ignore_bogus_error_responses=1"
+      verify: "sysctl net.ipv4.icmp_ignore_bogus_error_responses"
+
+  - id: CIS-3.2.7
+    title: "Ensure Reverse Path Filtering is enabled"
+    description: "Setting net.ipv4.conf.all.rp_filter and 
+    net.ipv4.conf.default.rp_filter to 1 forces the Linux 
+    kernel to utilize reverse path filtering on a received 
+    packet to determine if the packet was valid."
+    severity: Medium
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: SC-5
+      - ISO27001: A.13.1.1
+    check:
+      type: command
+      command: "sysctl net.ipv4.conf.all.rp_filter"
+      operator: contains
+      expected: "= 1"
+    remediation:
+      description: "Enable Reverse Path Filtering"
+      commands:
+        - "echo 'net.ipv4.conf.all.rp_filter = 1' >> /etc/sysctl.conf"
+        - "echo 'net.ipv4.conf.default.rp_filter = 1' >> /etc/sysctl.conf"
+        - "sysctl -w net.ipv4.conf.all.rp_filter=1"
+      verify: "sysctl net.ipv4.conf.all.rp_filter"
+
+  - id: CIS-3.2.8
+    title: "Ensure TCP SYN Cookies is enabled"
+    description: "When tcp_syncookies is set, the kernel 
+    will handle TCP SYN packets normally until the 
+    half-open connection queue is full at which time the 
+    SYN cookie functionality kicks in."
+    severity: Medium
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: SC-5
+      - ISO27001: A.13.1.1
+      - SOC2: CC6.1
+    check:
+      type: command
+      command: "sysctl net.ipv4.tcp_syncookies"
+      operator: contains
+      expected: "= 1"
+    remediation:
+      description: "Enable TCP SYN Cookies"
+      commands:
+        - "echo 'net.ipv4.tcp_syncookies = 1' >> /etc/sysctl.conf"
+        - "sysctl -w net.ipv4.tcp_syncookies=1"
+      verify: "sysctl net.ipv4.tcp_syncookies"
+
+  - id: CIS-3.3.1
+    title: "Ensure IPv6 router advertisements are not accepted"
+    description: "This setting disables the systems ability 
+    to accept router advertisements from IPv6 routers."
+    severity: Medium
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: SC-5
+      - ISO27001: A.13.1.1
+    check:
+      type: command
+      command: "sysctl net.ipv6.conf.all.accept_ra"
+      operator: contains
+      expected: "= 0"
+    remediation:
+      description: "Disable IPv6 router advertisements"
+      commands:
+        - "echo 'net.ipv6.conf.all.accept_ra = 0' >> /etc/sysctl.conf"
+        - "echo 'net.ipv6.conf.default.accept_ra = 0' >> /etc/sysctl.conf"
+        - "sysctl -w net.ipv6.conf.all.accept_ra=0"
+      verify: "sysctl net.ipv6.conf.all.accept_ra"
+
+  - id: CIS-3.4.1
+    title: "Ensure a firewall package is installed"
+    description: "A firewall utility is required to configure 
+    the Linux kernel netfilter framework via the iptables or 
+    nftables back-end."
+    severity: High
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: SC-7
+      - ISO27001: A.13.1.1
+      - SOC2: CC6.6
+    check:
+      type: command
+      command: "dpkg -l ufw 2>/dev/null | grep -c ufw"
+      operator: ">="
+      expected: 1
+      parse: last_value
+    remediation:
+      description: "Install UFW firewall"
+      commands:
+        - "apt install ufw -y"
+        - "ufw enable"
+      verify: "dpkg -l ufw"
+
+  - id: CIS-3.4.2
+    title: "Ensure firewall is active and enabled"
+    description: "UFW or Uncomplicated Firewall is a program 
+    for managing a netfilter firewall designed to be easy 
+    to use."
+    severity: High
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: SC-7
+      - ISO27001: A.13.1.1
+      - SOC2: CC6.6
+    check:
+      type: command
+      command: "ufw status | grep Status"
+      operator: contains
+      expected: "active"
+    remediation:
+      description: "Enable UFW firewall"
+      commands:
+        - "ufw enable"
+      verify: "ufw status"
