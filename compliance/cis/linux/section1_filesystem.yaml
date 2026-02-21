@@ -1,0 +1,245 @@
+framework: CIS
+version: "2.0"
+section: "1"
+title: "Initial Setup - Filesystem Configuration"
+os: linux
+
+controls:
+  - id: CIS-1.1.1.1
+    title: "Ensure cramfs filesystem is disabled"
+    description: "Removing support for unneeded filesystem 
+    types reduces the local attack surface."
+    severity: Low
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: CM-6
+      - ISO27001: A.12.6.1
+    check:
+      type: command
+      command: "modprobe -n -v cramfs 2>&1"
+      operator: contains
+      expected: "install /bin/true"
+    remediation:
+      description: "Disable cramfs filesystem module"
+      commands:
+        - "echo 'install cramfs /bin/true' >> /etc/modprobe.d/CIS.conf"
+      verify: "modprobe -n -v cramfs"
+
+  - id: CIS-1.1.1.2
+    title: "Ensure freevxfs filesystem is disabled"
+    description: "Removing support for unneeded filesystem 
+    types reduces the local attack surface."
+    severity: Low
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: CM-6
+      - ISO27001: A.12.6.1
+    check:
+      type: command
+      command: "modprobe -n -v freevxfs 2>&1"
+      operator: contains
+      expected: "install /bin/true"
+    remediation:
+      description: "Disable freevxfs filesystem module"
+      commands:
+        - "echo 'install freevxfs /bin/true' >> /etc/modprobe.d/CIS.conf"
+      verify: "modprobe -n -v freevxfs"
+
+  - id: CIS-1.1.1.3
+    title: "Ensure jffs2 filesystem is disabled"
+    description: "Removing support for unneeded filesystem 
+    types reduces the local attack surface."
+    severity: Low
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: CM-6
+    check:
+      type: command
+      command: "modprobe -n -v jffs2 2>&1"
+      operator: contains
+      expected: "install /bin/true"
+    remediation:
+      description: "Disable jffs2 filesystem module"
+      commands:
+        - "echo 'install jffs2 /bin/true' >> /etc/modprobe.d/CIS.conf"
+      verify: "modprobe -n -v jffs2"
+
+  - id: CIS-1.1.1.4
+    title: "Ensure hfs filesystem is disabled"
+    description: "Removing support for unneeded filesystem 
+    types reduces the local attack surface."
+    severity: Low
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: CM-6
+    check:
+      type: command
+      command: "modprobe -n -v hfs 2>&1"
+      operator: contains
+      expected: "install /bin/true"
+    remediation:
+      description: "Disable hfs filesystem module"
+      commands:
+        - "echo 'install hfs /bin/true' >> /etc/modprobe.d/CIS.conf"
+      verify: "modprobe -n -v hfs"
+
+  - id: CIS-1.1.1.5
+    title: "Ensure hfsplus filesystem is disabled"
+    description: "Removing support for unneeded filesystem 
+    types reduces the local attack surface."
+    severity: Low
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: CM-6
+    check:
+      type: command
+      command: "modprobe -n -v hfsplus 2>&1"
+      operator: contains
+      expected: "install /bin/true"
+    remediation:
+      description: "Disable hfsplus filesystem module"
+      commands:
+        - "echo 'install hfsplus /bin/true' >> /etc/modprobe.d/CIS.conf"
+      verify: "modprobe -n -v hfsplus"
+
+  - id: CIS-1.1.1.6
+    title: "Ensure squashfs filesystem is disabled"
+    description: "Removing support for unneeded filesystem 
+    types reduces the local attack surface."
+    severity: Low
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: CM-6
+    check:
+      type: command
+      command: "modprobe -n -v squashfs 2>&1"
+      operator: contains
+      expected: "install /bin/true"
+    remediation:
+      description: "Disable squashfs filesystem module"
+      commands:
+        - "echo 'install squashfs /bin/true' >> /etc/modprobe.d/CIS.conf"
+      verify: "modprobe -n -v squashfs"
+
+  - id: CIS-1.1.1.7
+    title: "Ensure udf filesystem is disabled"
+    description: "Removing support for unneeded filesystem 
+    types reduces the local attack surface."
+    severity: Low
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: CM-6
+    check:
+      type: command
+      command: "modprobe -n -v udf 2>&1"
+      operator: contains
+      expected: "install /bin/true"
+    remediation:
+      description: "Disable udf filesystem module"
+      commands:
+        - "echo 'install udf /bin/true' >> /etc/modprobe.d/CIS.conf"
+      verify: "modprobe -n -v udf"
+
+  - id: CIS-1.3.1
+    title: "Ensure AIDE is installed"
+    description: "AIDE takes a snapshot of filesystem state 
+    including modification times, permissions, and file hashes 
+    which can then be used to compare against the current state 
+    of the filesystem to detect modifications."
+    severity: Medium
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: SI-7
+      - ISO27001: A.12.2.1
+      - SOC2: CC6.1
+    check:
+      type: command
+      command: "dpkg -l aide 2>/dev/null | grep -c aide"
+      operator: ">="
+      expected: 1
+      parse: last_value
+    remediation:
+      description: "Install AIDE"
+      commands:
+        - "apt install aide aide-common -y"
+        - "aideinit"
+      verify: "dpkg -l aide"
+
+  - id: CIS-1.4.1
+    title: "Ensure permissions on bootloader config are configured"
+    description: "Setting the permissions to read and write 
+    for root only prevents non-root users from seeing the boot 
+    parameters or changing them."
+    severity: High
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: AC-3
+      - ISO27001: A.9.4.1
+    check:
+      type: command
+      command: "stat /boot/grub/grub.cfg | grep Access | head -1"
+      operator: contains
+      expected: "0600"
+    remediation:
+      description: "Set bootloader config permissions to 600"
+      commands:
+        - "chown root:root /boot/grub/grub.cfg"
+        - "chmod og-rwx /boot/grub/grub.cfg"
+      verify: "stat /boot/grub/grub.cfg"
+
+  - id: CIS-1.5.1
+    title: "Ensure core dumps are restricted"
+    description: "A core dump is the memory of an executable 
+    program. It is generally used to determine why a program 
+    aborted. It can also be used to glean confidential 
+    information from a core file."
+    severity: Medium
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: SC-4
+      - ISO27001: A.12.6.1
+    check:
+      type: command
+      command: "grep -E '^\\*\\s+hard\\s+core' /etc/security/limits.conf"
+      operator: contains
+      expected: "hard core 0"
+    remediation:
+      description: "Restrict core dumps"
+      commands:
+        - "echo '* hard core 0' >> /etc/security/limits.conf"
+        - "echo 'fs.suid_dumpable = 0' >> /etc/sysctl.conf"
+        - "sysctl -w fs.suid_dumpable=0"
+      verify: "grep core /etc/security/limits.conf"
+
+  - id: CIS-1.5.3
+    title: "Ensure address space layout randomization is enabled"
+    description: "Address space layout randomization protects 
+    against certain types of buffer overflow attacks."
+    severity: High
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: SI-16
+      - ISO27001: A.12.6.1
+      - SOC2: CC6.1
+    check:
+      type: command
+      command: "sysctl kernel.randomize_va_space"
+      operator: contains
+      expected: "= 2"
+    remediation:
+      description: "Enable ASLR"
+      commands:
+        - "echo 'kernel.randomize_va_space = 2' >> /etc/sysctl.conf"
+        - "sysctl -w kernel.randomize_va_space=2"
+      verify: "sysctl kernel.randomize_va_space"
