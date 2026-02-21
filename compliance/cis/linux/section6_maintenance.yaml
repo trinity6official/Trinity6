@@ -1,0 +1,383 @@
+framework: CIS
+version: "2.0"
+section: "6"
+title: "System Maintenance"
+os: linux
+
+controls:
+  - id: CIS-6.1.1
+    title: "Ensure permissions on passwd file are configured"
+    description: "The /etc/passwd file contains user 
+    account information that is used by many system 
+    utilities. Permissions should be restricted."
+    severity: High
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: AC-3
+      - ISO27001: A.9.4.1
+      - SOC2: CC6.1
+    check:
+      type: command
+      command: "stat /etc/passwd | grep Access | head -1"
+      operator: contains
+      expected: "0644"
+    remediation:
+      description: "Set correct permissions on passwd file"
+      commands:
+        - "chown root:root /etc/passwd"
+        - "chmod 644 /etc/passwd"
+      verify: "stat /etc/passwd"
+
+  - id: CIS-6.1.2
+    title: "Ensure permissions on shadow file are configured"
+    description: "The /etc/shadow file is used to store 
+    the information about user accounts that is critical 
+    to the security of those accounts."
+    severity: Critical
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: AC-3
+      - ISO27001: A.9.4.1
+      - SOC2: CC6.1
+    check:
+      type: command
+      command: "stat /etc/shadow | grep Access | head -1"
+      operator: contains
+      expected: "0640"
+    remediation:
+      description: "Set correct permissions on shadow file"
+      commands:
+        - "chown root:shadow /etc/shadow"
+        - "chmod o-rwx,g-wx /etc/shadow"
+      verify: "stat /etc/shadow"
+
+  - id: CIS-6.1.3
+    title: "Ensure permissions on group file are configured"
+    description: "The /etc/group file contains a list 
+    of all the valid groups defined in the system. 
+    Permissions should be restricted."
+    severity: High
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: AC-3
+      - ISO27001: A.9.4.1
+    check:
+      type: command
+      command: "stat /etc/group | grep Access | head -1"
+      operator: contains
+      expected: "0644"
+    remediation:
+      description: "Set correct permissions on group file"
+      commands:
+        - "chown root:root /etc/group"
+        - "chmod 644 /etc/group"
+      verify: "stat /etc/group"
+
+  - id: CIS-6.1.4
+    title: "Ensure permissions on gshadow file are configured"
+    description: "The /etc/gshadow file is used to store 
+    the information about groups that is critical to 
+    the security of those groups."
+    severity: Critical
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: AC-3
+      - ISO27001: A.9.4.1
+      - SOC2: CC6.1
+    check:
+      type: command
+      command: "stat /etc/gshadow | grep Access | head -1"
+      operator: contains
+      expected: "0640"
+    remediation:
+      description: "Set correct permissions on gshadow file"
+      commands:
+        - "chown root:shadow /etc/gshadow"
+        - "chmod o-rwx,g-rw /etc/gshadow"
+      verify: "stat /etc/gshadow"
+
+  - id: CIS-6.1.5
+    title: "Ensure permissions on passwd backup file are configured"
+    description: "The /etc/passwd- file contains backup 
+    user account information."
+    severity: Medium
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: AC-3
+      - ISO27001: A.9.4.1
+    check:
+      type: command
+      command: "stat /etc/passwd- 2>/dev/null | grep Access | head -1"
+      operator: contains
+      expected: "0600"
+    remediation:
+      description: "Set correct permissions on passwd backup"
+      commands:
+        - "chown root:root /etc/passwd-"
+        - "chmod 600 /etc/passwd-"
+      verify: "stat /etc/passwd-"
+
+  - id: CIS-6.1.6
+    title: "Ensure permissions on shadow backup file are configured"
+    description: "The /etc/shadow- file contains backup 
+    shadow password information."
+    severity: Critical
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: AC-3
+      - ISO27001: A.9.4.1
+      - SOC2: CC6.1
+    check:
+      type: command
+      command: "stat /etc/shadow- 2>/dev/null | grep Access | head -1"
+      operator: contains
+      expected: "0600"
+    remediation:
+      description: "Set correct permissions on shadow backup"
+      commands:
+        - "chown root:root /etc/shadow-"
+        - "chmod 600 /etc/shadow-"
+      verify: "stat /etc/shadow-"
+
+  - id: CIS-6.1.7
+    title: "Ensure no world writable files exist"
+    description: "Unix-based systems support variable 
+    settings to control access to files. World writable 
+    files are the least secure and should be avoided."
+    severity: High
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: AC-3
+      - ISO27001: A.9.4.1
+      - SOC2: CC6.1
+    check:
+      type: command
+      command: "find / -xdev -type f -perm -0002 2>/dev/null | wc -l"
+      operator: "=="
+      expected: 0
+      parse: last_value
+    remediation:
+      description: "Remove world writable permission from files"
+      commands:
+        - "find / -xdev -type f -perm -0002 -exec chmod o-w {} +"
+      verify: "find / -xdev -type f -perm -0002 | wc -l"
+
+  - id: CIS-6.1.8
+    title: "Ensure no unowned files or directories exist"
+    description: "Sometimes when administrators delete 
+    users from the password file they neglect to remove 
+    all files owned by those users from the system."
+    severity: Medium
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: AC-3
+      - ISO27001: A.9.4.1
+    check:
+      type: command
+      command: "find / -xdev -nouser 2>/dev/null | wc -l"
+      operator: "=="
+      expected: 0
+      parse: last_value
+    remediation:
+      description: "Fix or remove unowned files"
+      commands:
+        - "find / -xdev -nouser -ls 2>/dev/null"
+      verify: "find / -xdev -nouser | wc -l"
+
+  - id: CIS-6.1.9
+    title: "Ensure no ungrouped files or directories exist"
+    description: "Sometimes when administrators delete 
+    groups from the system they neglect to remove all 
+    files owned by those groups."
+    severity: Medium
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: AC-3
+      - ISO27001: A.9.4.1
+    check:
+      type: command
+      command: "find / -xdev -nogroup 2>/dev/null | wc -l"
+      operator: "=="
+      expected: 0
+      parse: last_value
+    remediation:
+      description: "Fix or remove ungrouped files"
+      commands:
+        - "find / -xdev -nogroup -ls 2>/dev/null"
+      verify: "find / -xdev -nogroup | wc -l"
+
+  - id: CIS-6.2.1
+    title: "Ensure accounts in passwd use shadowed passwords"
+    description: "Local accounts can use shadowed 
+    passwords. Using shadowed passwords protects user 
+    passwords from exposure."
+    severity: Critical
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: IA-5
+      - ISO27001: A.9.4.3
+      - SOC2: CC6.1
+    check:
+      type: command
+      command: "awk -F: '($2 != \"x\" ) { print $1}' /etc/passwd | wc -l"
+      operator: "=="
+      expected: 0
+      parse: last_value
+    remediation:
+      description: "Enable shadow passwords"
+      commands:
+        - "pwconv"
+      verify: "awk -F: '($2 != \"x\") {print $1}' /etc/passwd"
+
+  - id: CIS-6.2.2
+    title: "Ensure no legacy plus entries exist in passwd"
+    description: "The character + in various files is 
+    used to allow insertion of data from NIS maps at 
+    that point in the file. These entries should not exist."
+    severity: Critical
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: IA-5
+      - ISO27001: A.9.4.3
+      - SOC2: CC6.1
+    check:
+      type: command
+      command: "grep '^\+:' /etc/passwd | wc -l"
+      operator: "=="
+      expected: 0
+      parse: last_value
+    remediation:
+      description: "Remove legacy plus entries"
+      commands:
+        - "sed -i '/^+:/d' /etc/passwd"
+      verify: "grep '^+:' /etc/passwd"
+
+  - id: CIS-6.2.3
+    title: "Ensure root is the only UID 0 account"
+    description: "Any account with UID 0 has superuser 
+    privileges on the system. This access must be 
+    limited to only the default root account."
+    severity: Critical
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: AC-6
+      - ISO27001: A.9.4.4
+      - SOC2: CC6.1
+    check:
+      type: command
+      command: "awk -F: '($3 == 0) { print $1}' /etc/passwd | wc -l"
+      operator: "=="
+      expected: 1
+      parse: last_value
+    remediation:
+      description: "Ensure only root has UID 0"
+      commands:
+        - "awk -F: '($3 == 0 && $1 != \"root\") {print $1}' /etc/passwd"
+      verify: "awk -F: '($3 == 0) {print $1}' /etc/passwd"
+
+  - id: CIS-6.2.4
+    title: "Ensure root PATH integrity"
+    description: "The root user should have a secure 
+    PATH variable. This ensures that root only executes 
+    commands from known safe directories."
+    severity: High
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: AC-6
+      - ISO27001: A.9.4.4
+    check:
+      type: command
+      command: "echo $PATH | grep -c '::'"
+      operator: "=="
+      expected: 0
+      parse: last_value
+    remediation:
+      description: "Fix root PATH integrity"
+      commands:
+        - "PATH=$(echo $PATH | tr ':' '\n' | grep -v '^$' | tr '\n' ':' | sed 's/:$//')"
+      verify: "echo $PATH"
+
+  - id: CIS-6.2.5
+    title: "Ensure no duplicate UIDs exist"
+    description: "Although the useradd program will not 
+    let you create a duplicate User ID, it is possible 
+    for an administrator to manually edit the passwd file."
+    severity: High
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: IA-4
+      - ISO27001: A.9.2.1
+      - SOC2: CC6.1
+    check:
+      type: command
+      command: "cut -f3 -d: /etc/passwd | sort -n | uniq -d | wc -l"
+      operator: "=="
+      expected: 0
+      parse: last_value
+    remediation:
+      description: "Fix duplicate UIDs"
+      commands:
+        - "cut -f3 -d: /etc/passwd | sort -n | uniq -d"
+      verify: "cut -f3 -d: /etc/passwd | sort -n | uniq -d"
+
+  - id: CIS-6.2.6
+    title: "Ensure no duplicate GIDs exist"
+    description: "Although the groupadd program will 
+    not let you create a duplicate Group ID, it is 
+    possible for an administrator to manually edit 
+    the group file."
+    severity: High
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: IA-4
+      - ISO27001: A.9.2.1
+    check:
+      type: command
+      command: "cut -f3 -d: /etc/group | sort -n | uniq -d | wc -l"
+      operator: "=="
+      expected: 0
+      parse: last_value
+    remediation:
+      description: "Fix duplicate GIDs"
+      commands:
+        - "cut -f3 -d: /etc/group | sort -n | uniq -d"
+      verify: "cut -f3 -d: /etc/group | sort -n | uniq -d"
+
+  - id: CIS-6.2.7
+    title: "Ensure no duplicate user names exist"
+    description: "Although the useradd program will not 
+    let you create a duplicate user name, it is possible 
+    for an administrator to manually edit the passwd file."
+    severity: High
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: IA-4
+      - ISO27001: A.9.2.1
+      - SOC2: CC6.1
+    check:
+      type: command
+      command: "cut -f1 -d: /etc/passwd | sort | uniq -d | wc -l"
+      operator: "=="
+      expected: 0
+      parse: last_value
+    remediation:
+      description: "Fix duplicate usernames"
+      commands:
+        - "cut -f1 -d: /etc/passwd | sort | uniq -d"
+      verify: "cut -f1 -d: /etc/passwd | sort | uniq -d"
