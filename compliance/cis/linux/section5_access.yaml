@@ -1,0 +1,288 @@
+framework: CIS
+version: "2.0"
+section: "5"
+title: "Access Authentication and Authorization"
+os: linux
+
+controls:
+  - id: CIS-5.1.1
+    title: "Ensure cron daemon is enabled and running"
+    description: "The cron daemon is used to execute 
+    batch jobs on the system. Cron needs to be running 
+    and enabled to allow scheduled jobs to execute."
+    severity: Medium
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: CM-6
+      - ISO27001: A.12.1.2
+    check:
+      type: command
+      command: "systemctl is-active cron"
+      operator: contains
+      expected: "active"
+    remediation:
+      description: "Enable and start cron"
+      commands:
+        - "systemctl enable cron"
+        - "systemctl start cron"
+      verify: "systemctl is-active cron"
+
+  - id: CIS-5.1.2
+    title: "Ensure permissions on crontab are configured"
+    description: "The crontab is the list of commands 
+    that are scheduled to run at regular intervals. 
+    Permissions on this file should be restricted."
+    severity: Medium
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: AC-3
+      - ISO27001: A.9.4.1
+    check:
+      type: command
+      command: "stat /etc/crontab | grep Access | head -1"
+      operator: contains
+      expected: "0600"
+    remediation:
+      description: "Set crontab permissions"
+      commands:
+        - "chown root:root /etc/crontab"
+        - "chmod og-rwx /etc/crontab"
+      verify: "stat /etc/crontab"
+
+  - id: CIS-5.2.1
+    title: "Ensure sudo is installed"
+    description: "sudo allows a permitted user to execute 
+    a command as the superuser or another user as specified 
+    by the security policy."
+    severity: High
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: AC-6
+      - ISO27001: A.9.4.4
+      - SOC2: CC6.1
+    check:
+      type: command
+      command: "dpkg -l sudo 2>/dev/null | grep -c sudo"
+      operator: ">="
+      expected: 1
+      parse: last_value
+    remediation:
+      description: "Install sudo"
+      commands:
+        - "apt install sudo -y"
+      verify: "dpkg -l sudo"
+
+  - id: CIS-5.2.2
+    title: "Ensure sudo commands use pty"
+    description: "Requiring that sudo commands be run 
+    in a pseudo-terminal can prevent an attacker from 
+    escalating privileges by using output redirection."
+    severity: Medium
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: AC-6
+      - ISO27001: A.9.4.4
+    check:
+      type: command
+      command: "grep -r 'use_pty' /etc/sudoers /etc/sudoers.d/ 2>/dev/null"
+      operator: contains
+      expected: "use_pty"
+    remediation:
+      description: "Configure sudo to use pty"
+      commands:
+        - "echo 'Defaults use_pty' >> /etc/sudoers.d/CIS"
+      verify: "grep use_pty /etc/sudoers"
+
+  - id: CIS-5.2.3
+    title: "Ensure sudo log file exists"
+    description: "Creating a sudo log file provides a 
+    clear audit trail of all sudo commands executed 
+    on the system."
+    severity: Medium
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: AU-12
+      - ISO27001: A.12.4.1
+      - SOC2: CC7.2
+    check:
+      type: command
+      command: "grep -r 'logfile' /etc/sudoers /etc/sudoers.d/ 2>/dev/null"
+      operator: contains
+      expected: "logfile"
+    remediation:
+      description: "Configure sudo log file"
+      commands:
+        - "echo 'Defaults logfile=\"/var/log/sudo.log\"' >> /etc/sudoers.d/CIS"
+      verify: "grep logfile /etc/sudoers"
+
+  - id: CIS-5.3.1
+    title: "Ensure password creation requirements are configured"
+    description: "Strong passwords protect systems from 
+    being hacked through brute force methods."
+    severity: High
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: IA-5
+      - ISO27001: A.9.4.3
+      - SOC2: CC6.1
+    check:
+      type: command
+      command: "grep minlen /etc/security/pwquality.conf"
+      operator: ">="
+      expected: 14
+      parse: value_after_equals
+    remediation:
+      description: "Set password minimum length to 14"
+      commands:
+        - "sed -i 's/^.*minlen.*/minlen = 14/' /etc/security/pwquality.conf"
+      verify: "grep minlen /etc/security/pwquality.conf"
+
+  - id: CIS-5.3.2
+    title: "Ensure lockout for failed password attempts"
+    description: "Locking out user IDs after a number 
+    of consecutive failed login attempts mitigates 
+    brute force password attacks."
+    severity: High
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: AC-7
+      - ISO27001: A.9.4.2
+      - SOC2: CC6.1
+    check:
+      type: command
+      command: "grep 'deny=' /etc/security/faillock.conf 2>/dev/null"
+      operator: contains
+      expected: "deny="
+    remediation:
+      description: "Configure account lockout policy"
+      commands:
+        - "echo 'deny = 5' >> /etc/security/faillock.conf"
+        - "echo 'unlock_time = 900' >> /etc/security/faillock.conf"
+      verify: "grep deny /etc/security/faillock.conf"
+
+  - id: CIS-5.4.1.1
+    title: "Ensure password expiration is 365 days or less"
+    description: "The PASS_MAX_DAYS parameter controls 
+    the maximum number of days a password may be used 
+    before the user must change it."
+    severity: Medium
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: IA-5
+      - ISO27001: A.9.4.3
+      - SOC2: CC6.1
+    check:
+      type: command
+      command: "grep PASS_MAX_DAYS /etc/login.defs"
+      operator: "<="
+      expected: 365
+      parse: last_value
+    remediation:
+      description: "Set password expiration to 365 days"
+      commands:
+        - "sed -i 's/^PASS_MAX_DAYS.*/PASS_MAX_DAYS 365/' /etc/login.defs"
+      verify: "grep PASS_MAX_DAYS /etc/login.defs"
+
+  - id: CIS-5.4.1.2
+    title: "Ensure minimum days between password changes is 7"
+    description: "The PASS_MIN_DAYS parameter controls 
+    the minimum number of days a password may be used 
+    before the user must change it."
+    severity: Medium
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: IA-5
+      - ISO27001: A.9.4.3
+    check:
+      type: command
+      command: "grep PASS_MIN_DAYS /etc/login.defs"
+      operator: ">="
+      expected: 7
+      parse: last_value
+    remediation:
+      description: "Set minimum password change days to 7"
+      commands:
+        - "sed -i 's/^PASS_MIN_DAYS.*/PASS_MIN_DAYS 7/' /etc/login.defs"
+      verify: "grep PASS_MIN_DAYS /etc/login.defs"
+
+  - id: CIS-5.4.2
+    title: "Ensure system accounts are secured"
+    description: "System accounts are accounts that are 
+    not used by regular users but rather by services 
+    and programs. These accounts should be locked."
+    severity: High
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: AC-2
+      - ISO27001: A.9.2.1
+      - SOC2: CC6.1
+    check:
+      type: command
+      command: "awk -F: '($3 < 1000) {print $1\": \"$7}' /etc/passwd | grep -v nologin | grep -v false | grep -v sync | grep -v shutdown | grep -v halt | wc -l"
+      operator: "=="
+      expected: 0
+      parse: last_value
+    remediation:
+      description: "Lock system accounts"
+      commands:
+        - "for user in $(awk -F: '($3 < 1000) {print $1}' /etc/passwd); do usermod -L $user; done"
+      verify: "awk -F: '($3 < 1000) {print $1}' /etc/passwd"
+
+  - id: CIS-5.5.1
+    title: "Ensure root login is restricted to system console"
+    description: "The file /etc/securetty contains a 
+    list of valid terminals that may be logged in 
+    directly as root."
+    severity: High
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: AC-6
+      - ISO27001: A.9.4.4
+      - SOC2: CC6.1
+    check:
+      type: command
+      command: "cat /etc/securetty 2>/dev/null | wc -l"
+      operator: "<="
+      expected: 1
+      parse: last_value
+    remediation:
+      description: "Restrict root login to console"
+      commands:
+        - "echo 'console' > /etc/securetty"
+        - "chmod 600 /etc/securetty"
+      verify: "cat /etc/securetty"
+
+  - id: CIS-5.6
+    title: "Ensure access to su command is restricted"
+    description: "The su command allows a user to run 
+    a command or shell as another user. Restricting 
+    access to the su command reduces the risk of 
+    accidental or unauthorized use."
+    severity: High
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: AC-6
+      - ISO27001: A.9.4.4
+      - SOC2: CC6.1
+    check:
+      type: command
+      command: "grep pam_wheel /etc/pam.d/su"
+      operator: contains
+      expected: "pam_wheel"
+    remediation:
+      description: "Restrict su access using pam_wheel"
+      commands:
+        - "echo 'auth required pam_wheel.so use_uid' >> /etc/pam.d/su"
+      verify: "grep pam_wheel /etc/pam.d/su"
