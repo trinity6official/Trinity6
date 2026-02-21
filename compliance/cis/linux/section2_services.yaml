@@ -1,0 +1,397 @@
+framework: CIS
+version: "2.0"
+section: "2"
+title: "Services"
+os: linux
+
+controls:
+  - id: CIS-2.1.1
+    title: "Ensure xinetd is not installed"
+    description: "The eXtended InterNET Daemon provides 
+    access control for network services. It should not 
+    be installed unless specifically required."
+    severity: Medium
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: CM-7
+      - ISO27001: A.12.6.1
+    check:
+      type: command
+      command: "dpkg -l xinetd 2>/dev/null | grep -c xinetd"
+      operator: "=="
+      expected: 0
+      parse: last_value
+    remediation:
+      description: "Remove xinetd package"
+      commands:
+        - "apt purge xinetd -y"
+      verify: "dpkg -l xinetd"
+
+  - id: CIS-2.2.1
+    title: "Ensure time synchronization is in use"
+    description: "Time synchronization is important to 
+    support time sensitive security mechanisms and to 
+    ensure log files have consistent time records."
+    severity: Medium
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: AU-8
+      - ISO27001: A.12.4.4
+      - SOC2: CC7.1
+    check:
+      type: command
+      command: "systemctl is-enabled systemd-timesyncd 2>/dev/null || systemctl is-enabled ntp 2>/dev/null || systemctl is-enabled chrony 2>/dev/null"
+      operator: contains
+      expected: "enabled"
+    remediation:
+      description: "Enable time synchronization"
+      commands:
+        - "apt install chrony -y"
+        - "systemctl enable chrony"
+        - "systemctl start chrony"
+      verify: "systemctl is-enabled chrony"
+
+  - id: CIS-2.2.2
+    title: "Ensure X Window System is not installed"
+    description: "The X Window System provides a Graphical 
+    User Interface environment. Unless required, it should 
+    not be installed on server systems."
+    severity: Medium
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: CM-7
+      - ISO27001: A.12.6.1
+    check:
+      type: command
+      command: "dpkg -l xserver-xorg* 2>/dev/null | grep -c xserver"
+      operator: "=="
+      expected: 0
+      parse: last_value
+    remediation:
+      description: "Remove X Window System"
+      commands:
+        - "apt purge xserver-xorg* -y"
+      verify: "dpkg -l xserver-xorg*"
+
+  - id: CIS-2.2.3
+    title: "Ensure Avahi Server is not enabled"
+    description: "Avahi is a free zeroconf implementation 
+    including a system for multicast DNS/DNS-SD discovery. 
+    It should be disabled if not required."
+    severity: Medium
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: CM-7
+      - ISO27001: A.12.6.1
+    check:
+      type: command
+      command: "systemctl is-enabled avahi-daemon 2>/dev/null"
+      operator: contains
+      expected: "disabled"
+    remediation:
+      description: "Disable Avahi Server"
+      commands:
+        - "systemctl disable avahi-daemon"
+        - "systemctl stop avahi-daemon"
+      verify: "systemctl is-enabled avahi-daemon"
+
+  - id: CIS-2.2.4
+    title: "Ensure CUPS is not enabled"
+    description: "The Common Unix Print System provides the 
+    ability to print to local and network printers. Unless 
+    printing is required it should be disabled."
+    severity: Low
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: CM-7
+    check:
+      type: command
+      command: "systemctl is-enabled cups 2>/dev/null"
+      operator: contains
+      expected: "disabled"
+    remediation:
+      description: "Disable CUPS"
+      commands:
+        - "systemctl disable cups"
+        - "systemctl stop cups"
+      verify: "systemctl is-enabled cups"
+
+  - id: CIS-2.2.5
+    title: "Ensure DHCP Server is not enabled"
+    description: "The Dynamic Host Configuration Protocol 
+    is a service that allows machines to be dynamically 
+    assigned IP addresses. Unless required it should be disabled."
+    severity: High
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: CM-7
+      - ISO27001: A.12.6.1
+    check:
+      type: command
+      command: "systemctl is-enabled isc-dhcp-server 2>/dev/null"
+      operator: contains
+      expected: "disabled"
+    remediation:
+      description: "Disable DHCP Server"
+      commands:
+        - "systemctl disable isc-dhcp-server"
+        - "systemctl stop isc-dhcp-server"
+      verify: "systemctl is-enabled isc-dhcp-server"
+
+  - id: CIS-2.2.6
+    title: "Ensure LDAP server is not enabled"
+    description: "The Lightweight Directory Access Protocol 
+    is an open, vendor-neutral, industry standard application 
+    protocol. Unless required it should be disabled."
+    severity: Medium
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: CM-7
+      - ISO27001: A.12.6.1
+    check:
+      type: command
+      command: "systemctl is-enabled slapd 2>/dev/null"
+      operator: contains
+      expected: "disabled"
+    remediation:
+      description: "Disable LDAP Server"
+      commands:
+        - "systemctl disable slapd"
+        - "systemctl stop slapd"
+      verify: "systemctl is-enabled slapd"
+
+  - id: CIS-2.2.7
+    title: "Ensure NFS is not enabled"
+    description: "The Network File System is a distributed 
+    file system protocol. Unless required it should be disabled."
+    severity: Medium
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: CM-7
+      - ISO27001: A.12.6.1
+    check:
+      type: command
+      command: "systemctl is-enabled nfs-server 2>/dev/null"
+      operator: contains
+      expected: "disabled"
+    remediation:
+      description: "Disable NFS Server"
+      commands:
+        - "systemctl disable nfs-server"
+        - "systemctl stop nfs-server"
+      verify: "systemctl is-enabled nfs-server"
+
+  - id: CIS-2.2.8
+    title: "Ensure DNS Server is not enabled"
+    description: "The Domain Name System is a hierarchical 
+    naming system that maps names to IP addresses. Unless 
+    required it should be disabled."
+    severity: Medium
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: CM-7
+    check:
+      type: command
+      command: "systemctl is-enabled bind9 2>/dev/null"
+      operator: contains
+      expected: "disabled"
+    remediation:
+      description: "Disable DNS Server"
+      commands:
+        - "systemctl disable bind9"
+        - "systemctl stop bind9"
+      verify: "systemctl is-enabled bind9"
+
+  - id: CIS-2.2.9
+    title: "Ensure FTP Server is not enabled"
+    description: "The File Transfer Protocol provides 
+    unencrypted file transfer. Unless required it should 
+    be disabled."
+    severity: High
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: CM-7
+      - ISO27001: A.12.6.1
+      - SOC2: CC6.1
+    check:
+      type: command
+      command: "systemctl is-enabled vsftpd 2>/dev/null"
+      operator: contains
+      expected: "disabled"
+    remediation:
+      description: "Disable FTP Server"
+      commands:
+        - "systemctl disable vsftpd"
+        - "systemctl stop vsftpd"
+      verify: "systemctl is-enabled vsftpd"
+
+  - id: CIS-2.2.10
+    title: "Ensure HTTP server is not enabled"
+    description: "HTTP or web servers provide the ability 
+    to host web site content. Unless required it should 
+    be disabled."
+    severity: Medium
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: CM-7
+      - ISO27001: A.12.6.1
+    check:
+      type: command
+      command: "systemctl is-enabled apache2 2>/dev/null"
+      operator: contains
+      expected: "disabled"
+    remediation:
+      description: "Disable Apache HTTP Server"
+      commands:
+        - "systemctl disable apache2"
+        - "systemctl stop apache2"
+      verify: "systemctl is-enabled apache2"
+
+  - id: CIS-2.2.11
+    title: "Ensure IMAP and POP3 server is not enabled"
+    description: "dovecot is an open source IMAP and POP3 
+    server. Unless required it should be disabled."
+    severity: Medium
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: CM-7
+      - ISO27001: A.12.6.1
+    check:
+      type: command
+      command: "systemctl is-enabled dovecot 2>/dev/null"
+      operator: contains
+      expected: "disabled"
+    remediation:
+      description: "Disable Dovecot IMAP/POP3 Server"
+      commands:
+        - "systemctl disable dovecot"
+        - "systemctl stop dovecot"
+      verify: "systemctl is-enabled dovecot"
+
+  - id: CIS-2.2.12
+    title: "Ensure Samba is not enabled"
+    description: "The Samba daemon allows file and print 
+    sharing between Unix and Windows systems. Unless 
+    required it should be disabled."
+    severity: Medium
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: CM-7
+      - ISO27001: A.12.6.1
+    check:
+      type: command
+      command: "systemctl is-enabled smbd 2>/dev/null"
+      operator: contains
+      expected: "disabled"
+    remediation:
+      description: "Disable Samba"
+      commands:
+        - "systemctl disable smbd"
+        - "systemctl stop smbd"
+      verify: "systemctl is-enabled smbd"
+
+  - id: CIS-2.3.1
+    title: "Ensure NIS client is not installed"
+    description: "The Network Information Service is a 
+    deprecated client-server directory service protocol. 
+    It should not be installed."
+    severity: Medium
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: CM-7
+      - ISO27001: A.12.6.1
+    check:
+      type: command
+      command: "dpkg -l nis 2>/dev/null | grep -c nis"
+      operator: "=="
+      expected: 0
+      parse: last_value
+    remediation:
+      description: "Remove NIS client"
+      commands:
+        - "apt purge nis -y"
+      verify: "dpkg -l nis"
+
+  - id: CIS-2.3.2
+    title: "Ensure rsh client is not installed"
+    description: "The rsh package contains client commands 
+    for the rsh services. These are insecure and should 
+    not be installed."
+    severity: High
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: CM-7
+      - ISO27001: A.12.6.1
+      - SOC2: CC6.1
+    check:
+      type: command
+      command: "dpkg -l rsh-client 2>/dev/null | grep -c rsh"
+      operator: "=="
+      expected: 0
+      parse: last_value
+    remediation:
+      description: "Remove rsh client"
+      commands:
+        - "apt purge rsh-client -y"
+      verify: "dpkg -l rsh-client"
+
+  - id: CIS-2.3.3
+    title: "Ensure talk client is not installed"
+    description: "The talk software makes it possible to 
+    send and receive messages across networks. It is 
+    insecure and should not be installed."
+    severity: Medium
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: CM-7
+    check:
+      type: command
+      command: "dpkg -l talk 2>/dev/null | grep -c talk"
+      operator: "=="
+      expected: 0
+      parse: last_value
+    remediation:
+      description: "Remove talk client"
+      commands:
+        - "apt purge talk -y"
+      verify: "dpkg -l talk"
+
+  - id: CIS-2.3.4
+    title: "Ensure telnet client is not installed"
+    description: "The telnet package contains the telnet 
+    client which allows users to login to remote systems 
+    using the telnet protocol which is unencrypted."
+    severity: High
+    scored: true
+    frameworks:
+      - CIS
+      - NIST: CM-7
+      - ISO27001: A.12.6.1
+      - SOC2: CC6.1
+    check:
+      type: command
+      command: "dpkg -l telnet 2>/dev/null | grep -c telnet"
+      operator: "=="
+      expected: 0
+      parse: last_value
+    remediation:
+      description: "Remove telnet client"
+      commands:
+        - "apt purge telnet -y"
+      verify: "dpkg -l telnet"
