@@ -1,0 +1,25 @@
+# Trinity6 GRC Scanner
+# Python Dependencies
+
+# SSH Connections
+paramiko
+
+# YAML Processing
+pyyaml
+
+# Network Scanning
+python-nmap
+
+# HTTP Requests for Ollama API
+requests
+
+# Web Dashboard API
+fastapi
+uvicorn
+
+# Report Generation
+jinja2
+
+# Utilities
+python-dotenv
+colorama
