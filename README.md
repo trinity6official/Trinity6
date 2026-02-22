@@ -129,6 +129,7 @@ python cli/trinity6.py version
 
 ## Project Structure
 
+```
 Trinity6/
 ├── compliance/
 │   └── cis/
@@ -152,7 +153,7 @@ Trinity6/
 │   └── generator.py
 ├── results/
 └── requirements.txt
-
+```
 ---
 
 ## Roadmap
