@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trinity6 Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #0a0e1a;
+            color: #e0e6f0;
+            min-height: 100vh;
+        }
+        
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 40px;
+            border-bottom: 1px solid #1e2f42;
+            position: sticky;
+            top: 0;
+            background: #0a0e1a;
+            z-index: 1000;
+        }
+        
+        .logo-link {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+        }
+        
+        .logo-link img {
+            height: 42px;
+            width: auto;
+            display: block;
+            filter: drop-shadow(0 0 5px rgba(0, 212, 255, 0.4));
+            transition: transform 0.3s ease;
+        }
+        
+        .logo-link img:hover {
+            transform: scale(1.05);
+        }
+        
+        .nav-right {
+            font-size: 0.75rem;
+            color: #4a6a86;
+            letter-spacing: 1px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+        
+        .page-title {
+            font-size: 0.75rem;
+            letter-spacing: 3px;
+            color: #00d4ff;
+            text-transform: uppercase;
+            margin-bottom: 24px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: #0f1724;
+            border: 1px solid #1e2f42;
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 900;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+        
+        .stat-label {
+            font-size: 0.7rem;
+            color: #4a6a86;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        
+        .score { color: #00ff99; }
+        .passed { color: #00ff99; }
+        .failed { color: #ff4444; }
+        .critical { color: #ff8800; }
+        .total { color: #00d4ff; }
+        
+        .section-title {
+            font-size: 0.75rem;
+            letter-spacing: 3px;
+            color: #00d4ff;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+            margin-top: 30px;
+        }
+        
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+            font-size: 0.82rem;
+        }
+        
+        .results-table th {
+            background: #0f1724;
+            padding: 12px 16px;
+            text-align: left;
+            color: #00d4ff;
+            font-size: 0.7rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            border-bottom: 1px solid #1e2f42;
+        }
+        
+        .results-table td {
+            padding: 10px 16px;
+            border-bottom: 1px solid #0f1724;
+            color: #7a8fa6;
+        }
+        
+        .results-table tr:hover td {
+            background: #0f1724;
+        }
+        
+        .badge {
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+        
+        .badge-pass {
+            background: #00ff9922;
+            color: #00ff99;
+        }
+        
+        .badge-fail {
+            background: #ff444422;
+            color: #ff4444;
+        }
+        
+        .badge-critical {
+            background: #ff000022;
+            color: #ff4444;
+        }
+        
+        .badge-high {
+            background: #ff880022;
+            color: #ff8800;
+        }
+        
+        .badge-medium {
+            background: #ffaa0022;
+            color: #ffaa00;
+        }
+        
+        .badge-low {
+            background: #00ff9922;
+            color: #00ff99;
+        }
+        
+        .control-id {
+            font-family: monospace;
+            color: #00d4ff;
+            font-size: 0.8rem;
+        }
+        
+        .upload-area {
+            background: #0f1724;
+            border: 2px dashed #1e2f42;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+        
+        .upload-area:hover {
+            border-color: #00d4ff;
+        }
+        
+        .upload-area h3 {
+            color: #00d4ff;
+            margin-bottom: 8px;
+        }
+        
+        .upload-area p {
+            color: #4a6a86;
+            font-size: 0.85rem;
+        }
+        
+        .btn {
+            background: #00d4ff;
+            color: #0a0e1a;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 0.85rem;
+            margin-top: 12px;
+        }
+        
+        .btn:hover {
+            background: #00b8e0;
+        }
+        
+        .hidden { display: none; }
+        
+        .framework-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+        
+        .framework-card {
+            background: #0f1724;
+            border: 1px solid #1e2f42;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .framework-card h3 {
+            font-size: 0.75rem;
+            color: #4a6a86;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+        
+        .fw-score {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        
+        .fw-detail {
+            font-size: 0.7rem;
+            color: #4a6a86;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 30px;
+            color: #1e2f42;
+            font-size: 0.75rem;
+            border-top: 1px solid #1e2f42;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <a href="https://trinity6.com" class="logo-link">
+        <img src="logo.png" alt="Trinity6">
+    </a>
+    <div class="nav-right">COMPLIANCE DASHBOARD</div>
+</nav>
+
+<div class="container">
+
+    <p class="page-title">Compliance Dashboard</p>
+
+    <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+        <h3>Load Scan Results</h3>
+        <p>Click to upload a Trinity6 scan results JSON file</p>
+        <button class="btn">Choose File</button>
+        <input type="file" id="fileInput" accept=".json" class="hidden" onchange="loadResults(event)">
+    </div>
+
+    <div id="dashboard" class="hidden">
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number score" id="scoreVal">0%</div>
+                <div class="stat-label">Compliance Score</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number passed" id="passedVal">0</div>
+                <div class="stat-label">Passed</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number failed" id="failedVal">0</div>
+                <div class="stat-label">Failed</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number critical" id="criticalVal">0</div>
+                <div class="stat-label">Critical Issues</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number total" id="totalVal">0</div>
+                <div class="stat-label">Total Checks</div>
+            </div>
+        </div>
+
+        <p class="section-title">Framework Coverage</p>
+        <div class="framework-grid" id="frameworkGrid"></div>
+
+        <p class="section-title">Critical and High Findings</p>
+        <table class="results-table">
+            <thead>
+                <tr>
+                    <th>Control ID</th>
+                    <th>Title</th>
+                    <th>Severity</th>
+                    <th>Fix</th>
+                </tr>
+            </thead>
+            <tbody id="criticalBody"></tbody>
+        </table>
+
+        <p class="section-title">All Results</p>
+        <table class="results-table">
+            <thead>
+                <tr>
+                    <th>Control ID</th>
+                    <th>Title</th>
+                    <th>Severity</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="resultsBody"></tbody>
+        </table>
+
+    </div>
+
+</div>
+
+<footer>
+    © 2026 Trinity6 · Intelligent Security · trinity6.com
+</footer>
+
+<script>
+function loadResults(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = JSON.parse(e.target.result);
+            renderDashboard(data);
+        } catch(err) {
+            alert('Invalid JSON file. Please upload a Trinity6 scan results file.');
+        }
+    };
+    reader.readAsText(file);
+}
+
+function getScoreColor(score) {
+    if (score >= 80) return '#00ff99';
+    if (score >= 60) return '#ffaa00';
+    return '#ff4444';
+}
+
+function renderDashboard(data) {
+    const score = data.compliance_score || {};
+    const critical = data.critical_findings || [];
+    const checks = data.checks || data.all_results || [];
+    const framework = data.framework_coverage || {};
+
+    document.getElementById('scoreVal').textContent = score.score + '%';
+    document.getElementById('scoreVal').style.color = getScoreColor(score.score);
+    document.getElementById('passedVal').textContent = score.passed || 0;
+    document.getElementById('failedVal').textContent = score.failed || 0;
+    document.getElementById('criticalVal').textContent = critical.length;
+    document.getElementById('totalVal').textContent = score.total || 0;
+
+    const fwGrid = document.getElementById('frameworkGrid');
+    fwGrid.innerHTML = '';
+    for (const [fw, fwData] of Object.entries(framework)) {
+        const color = getScoreColor(fwData.score);
+        fwGrid.innerHTML += `
+            <div class="framework-card">
+                <h3>${fw}</h3>
+                <div class="fw-score" style="color:${color}">${fwData.score}%</div>
+                <div class="fw-detail">${fwData.passed} passed / ${fwData.failed} failed</div>
+            </div>`;
+    }
+
+    const critBody = document.getElementById('criticalBody');
+    critBody.innerHTML = '';
+    if (critical.length === 0) {
+        critBody.innerHTML = '<tr><td colspan="4" style="color:#00ff99">No critical findings!</td></tr>';
+    }
+    for (const f of critical) {
+        const rem = typeof f.remediation === 'object'
+            ? f.remediation.description || ''
+            : f.remediation || '';
+        critBody.innerHTML += `
+            <tr>
+                <td><span class="control-id">${f.control_id}</span></td>
+                <td style="color:#ffffff">${f.title}</td>
+                <td><span class="badge badge-${f.severity.toLowerCase()}">${f.severity}</span></td>
+                <td>${rem.substring(0, 60)}</td>
+            </tr>`;
+    }
+
+    const resBody = document.getElementById('resultsBody');
+    resBody.innerHTML = '';
+    for (const check of checks) {
+        const statusClass = check.status === 'PASS' ? 'badge-pass' : 'badge-fail';
+        resBody.innerHTML += `
+            <tr>
+                <td><span class="control-id">${check.control_id}</span></td>
+                <td style="color:#ffffff">${check.title}</td>
+                <td><span class="badge badge-${check.severity ? check.severity.toLowerCase() : 'low'}">${check.severity || ''}</span></td>
+                <td><span class="badge ${statusClass}">${check.status}</span></td>
+            </tr>`;
+    }
+
+    document.getElementById('dashboard').classList.remove('hidden');
+}
+</script>
+
+</body>
+</html>
