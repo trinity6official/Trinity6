@@ -23,3 +23,6 @@ jinja2
 # Utilities
 python-dotenv
 colorama
+
+# Reports
+reportlab
