@@ -203,4 +203,5 @@ Trinity6 is an intelligent cybersecurity company building AI powered GRC automat
 
 ---
 
-2026 Trinity6 - Intelligent Security - trinity6.com
+© 2026 Trinity6 · Intelligent Security · trinity6.com
+
